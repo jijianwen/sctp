@@ -62,6 +62,14 @@ vCapture($IF0);
 
 sctpCheckEnv($IF0);
 
+$DEFAULT_NET_CORE_RMEM = sctpGetRemoteSys("NET.CORE.RMEM.DEFAULT");
+# The value of /proc/sys/net/core/rmem_default on RHEL7.1 is 212992.
+# SCTP set a_rwnd to be half of rmem_default. So this test case can't
+# cause nut runs out of rcvbuf space. set /proc/sys/net/core/rmem_default
+# to be value(124928) equals to RHEL6.7
+$NET_CORE_RMEM = 124928;
+sctpSetRemoteSys("NET.CORE.RMEM.DEFAULT", $NET_CORE_RMEM);
+
 sctpStartEchoServer($IF0);
 
 vConnect($IF0);
@@ -125,6 +133,16 @@ if ($error >= $rcvcnt + 5) {
 
 vLogHTML(OK);
 exit $V6evalTool::exitPass;
+
+END {
+	# remember exit status, this maybe change after following process
+	my $ret = $?;
+
+	sctpSetRemoteSys("NET.CORE.RMEM.DEFAULT", $DEFAULT_NET_CORE_RMEM);
+
+	# exit with the last exit status
+	exit($ret);
+}
 
 ######################################################################
 __END__

@@ -62,6 +62,13 @@ sctpStartServer($IF0);
 
 vLogHTML('<B>================ Main Test =================</B>');
 
+%ret = vWarpRecv($IF0, 60, 0, 0, sctp_chunk_heartbeat);
+if($ret{status} != 0 || $ret{recvFrame} ne 'sctp_chunk_heartbeat') {
+        vLogHTML('Cannot receive SCTP CHUNK_HEARTBEAT<BR>');
+        vLogHTML('<FONT COLOR="#00FF00">NG</FONT>');
+        exit $V6evalTool::exitFail;
+}
+
 $stime = $ret{"recvTime".$ret{"recvCount"}};
 $count = 0;
 

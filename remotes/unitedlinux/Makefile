@@ -29,16 +29,21 @@
 # Written or modified by:
 #    Hiroaki Kago <linuxsctp-kg@ml.css.fujitsu.com>
 #    Wei Yongjun <yjwei@cn.fujitsu.com>
+#    Ji Jianwen <jijianwen@gmail.com>
 #
 # Any bugs reported given to us we will try to fix... any fixes shared will
 # be incorporated into the next SCTP release.
 #
 ##############################################################################
 
-SUBDIRS=linux-v6 unitedlinux
+RMT_DIR=$(PREFIX)/bin/unitedlinux
+RMTFILES = setsysconfig.rmt getsysconfig.rmt
+
+all:
 
 install:
-	@for subdir in ${SUBDIRS}; do \
-		(cd $$subdir; ${MAKE} $@); \
-	done
+	install -d -o bin -g bin -m 755 $(RMT_DIR)
+	install -c -o bin -g bin -m 555 $(RMTFILES) $(RMT_DIR)
+
+include ../../Makefile.inc
 

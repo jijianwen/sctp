@@ -195,6 +195,8 @@ END {
 		vLogHTML("<BR><B>== Need Reboot Remote System to restore Test Environment ==</B><BR>");
 		sctpReboot();
 #		sctpRemoteCommand("checksctp") if ($CONF{"NEEDREBOOT"} == 1);
+#		this statement could be used to replace with sctpReboot() to decrease testing time
+#		sctpRemoteCommand("service network restart") if ($CONF{"NEEDREBOOT"} == 1);
 	}
 
 	# exit with the last exit status
@@ -880,7 +882,7 @@ sub vRecvMsg($;$$) {
 
 	sctpUpdateRecvACK();
 
-	%ret = vWarpRecv($IF, 10, 0, 0, $data);
+	%ret = vWarpRecv($IF, 20, 0, 0, $data);
 	if($ret{status} != 0 || $ret{recvFrame} ne $data) {
 		vLogHTML('Cannot receive SCTP CHUNK_DATA<BR>');
 		vSend($IF, sctp_chunk_abort_snd);

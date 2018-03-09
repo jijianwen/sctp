@@ -61,6 +61,12 @@ vRegisterExtNS("arp_request_link0_to_link1", "arp_reply_link1_to_link0");
 
 sctpStartEchoServer($IF0);
 
+$pf_enable_exist=sctpRemoteCommand("test -f /proc/sys/net/sctp/pf_enable");
+if ($pf_enable_exist == 0) {
+	$DEF_PF_ENABLE = sctpGetRemoteSys("PF.ENABLE");
+	sctpSetRemoteSys("PF.ENABLE", 0);
+}
+
 vConnect($IF0, sctp_chunk_init_addr);
 
 vSendMsg($IF0);
@@ -105,6 +111,15 @@ vClose($IF0);
 vLogHTML(OK);
 exit $V6evalTool::exitPass;
 
+END {
+	# remember exit status, this maybe change after following process
+	my $ret = $?;
+
+	sctpSetRemoteSys("PF.ENABLE", $DEF_PF_ENABLE);
+
+	# exit with the last exit status
+	exit($ret);
+}
 ######################################################################
 __END__
 

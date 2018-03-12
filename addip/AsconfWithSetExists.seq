@@ -56,6 +56,9 @@ $IF1 = Link1;
 vCapture($IF0);
 vCapture($IF1);
 
+$DEFAULT_PF_RETRANS = sctpGetRemoteSys("PATH.FAILURE.RETRANS");
+sctpSetRemoteSys("PATH.FAILURE.RETRANS", 1);
+
 sctpCheckEnv($IF0, $IF1);
 
 sctpStartEchoServer($IF0);
@@ -105,6 +108,16 @@ vClose($IF0);
 
 vLogHTML(OK);
 exit $V6evalTool::exitPass;
+
+END {
+	# remember exit status, this maybe change after following process
+	my $ret = $?;
+
+	sctpSetRemoteSys("PATH.FAILURE.RETRANS", $DEFAULT_PF_RETRANS);
+
+	# exit with the last exit status
+	exit($ret);
+}
 
 ######################################################################
 __END__

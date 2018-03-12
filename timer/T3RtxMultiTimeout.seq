@@ -58,6 +58,8 @@ sctpCheckEnv($IF0, $IF1);
 
 $ASSOC_MAX_RETRANS = $SCTP::CONF{"ASSOCIATION_MAX_RETRANS"};
 $TIMEOUT = $SCTP::CONF{"RTO_MAX"} + 5;
+$HB_INTERVAL = sctpGetRemoteSys("HB.INTERVAL");
+sctpSetRemoteSys("HB.INTERVAL", $HB_INTERVAL * 100);
 
 sctpStartMultiHomeClient($IF0);
 
@@ -88,6 +90,16 @@ if($ASSOC_MAX_RETRANS != $retrans) {
 
 vLogHTML(OK);
 exit $V6evalTool::exitPass;
+
+END {
+	# remember exit status, this maybe change after following process
+	my $ret = $?;
+
+	sctpSetRemoteSys("HB.INTERVAL", $HB_INTERVAL);
+
+	# exit with the last exit status
+	exit($ret);
+}
 
 ######################################################################
 __END__

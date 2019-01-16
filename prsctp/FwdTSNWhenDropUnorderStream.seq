@@ -47,12 +47,17 @@ use SCTP;
 
 $IF0 = Link0;
 $COUNT = 4;
+$VERCMP=vRemote("rcommand.rmt", "cmd=\"rpmdev-vercmp \$(rpm -q lksctp-tools --queryformat \"%{VERSION}\n\") 1.0.18\"");
 
 vCapture($IF0);
 
 sctpCheckEnv($IF0);
 
-sctpStartClient($IF0, $COUNT, ($SCTP::CONF{ENABLE_IPV6} == 0) ? 1452 : 1432, "-O 2000 -M 1 -o 0");
+if ($VERCMP == 12) {
+	sctpStartClient($IF0, $COUNT, ($SCTP::CONF{ENABLE_IPV6} == 0) ? 1452 : 1432, "-O 2000 -M 1 -o 0");
+} else {
+	sctpStartClient($IF0, $COUNT, ($SCTP::CONF{ENABLE_IPV6} == 0) ? 1452 : 1432, "-O 2000 -M 2 -o 0");
+}
 
 vListen($IF0);
 

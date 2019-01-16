@@ -157,7 +157,7 @@ BEGIN {
 		$CONF{"SCTP_NUT_NET0_ADDR"} = $CONF{"SCTP6_NUT_NET0_ADDR"};
 		$CONF{"SCTP_NUT_NET1_ADDR"} = $CONF{"SCTP6_NUT_NET1_ADDR"};
 	}
-
+	vRemote("rcommand.rmt", "cmd=\"modprobe sctp\"");
 }
 
 #======================================================================

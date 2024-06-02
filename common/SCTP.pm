@@ -193,10 +193,14 @@ END {
 	# Reboot Remote System if needed
 	if ($CONF{"NEEDREBOOT"} != 0) {
 		vLogHTML("<BR><B>== Need Reboot Remote System to restore Test Environment ==</B><BR>");
-		sctpReboot();
+#		sctpReboot();
 #		sctpRemoteCommand("checksctp") if ($CONF{"NEEDREBOOT"} == 1);
-#		this statement could be used to replace with sctpReboot() to decrease testing time
-#		sctpRemoteCommand("service network restart") if ($CONF{"NEEDREBOOT"} == 1);
+#		the following statements could be used instead of sctpReboot() to decrease testing time
+		my $nut_if1 = $V6evalTool::NutDef{"Link0_device"};
+		my $nut_if2 = $V6evalTool::NutDef{"Link1_device"};
+		sctpRemoteCommand("ip route flu cached;ip -6 route flu cached");
+		sctpRemoteCommand("ip link set $nut_if1 down; sleep 1; ip link set $nut_if1 up; sleep 2");
+		sctpRemoteCommand("ip link set $nut_if2 down; sleep 1; ip link set $nut_if2 up; sleep 2");
 	}
 
 	# exit with the last exit status

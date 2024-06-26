@@ -44,8 +44,8 @@ use SCTP;
 %pktdesc = (
 	sctp_chunk_data_rcv_frag_all	=> "Recv SCTP CHUNK_DATA (all)",
 	sctp_chunk_sack_snd_frag_all	=> "Send SCTP CHUNK_SACK (all)",
-	sctp_chunk_data_and_sack_12	=> "Recv SCTP CHUNK_SACK and CHUNK_DATA",
-	sctp_chunk_sack_snd_frag12	=> "Send SCTP CHUNK_SACK",
+	sctp_chunk_data_and_sack_10	=> "Recv SCTP CHUNK_SACK and CHUNK_DATA",
+	sctp_chunk_sack_snd_frag10	=> "Send SCTP CHUNK_SACK",
 );
 
 $IF0 = Link0;
@@ -60,7 +60,7 @@ vConnect($IF0);
 
 vLogHTML('<B>================ Main Test =================</B>');
 
-$count = 12;
+$count = 10;
 for($i = 0; $i <= $count; $i++) {
 	$pktdesc{"sctp_chunk_data_snd_frag$i"} = "Send SCTP CHUNK_DATA ($i)";
 	$pktdesc{"sctp_chunk_sack_rcv_frag$i"} = "Recv SCTP CHUNK_SACK ($i)";
@@ -78,10 +78,10 @@ for($sndcnt = 0; $sndcnt < $count; $sndcnt++) {
 	}
 }
 
-vSend($IF0, sctp_chunk_data_snd_frag12);
+vSend($IF0, sctp_chunk_data_snd_frag10);
 
-%ret = vWarpRecv($IF0, 10, 0, 0, sctp_chunk_sack_rcv_frag11);
-if($ret{status} != 0 || $ret{recvFrame} ne sctp_chunk_sack_rcv_frag11) {
+%ret = vWarpRecv($IF0, 10, 0, 0, sctp_chunk_sack_rcv_frag9);
+if($ret{status} != 0 || $ret{recvFrame} ne sctp_chunk_sack_rcv_frag9) {
 	vLogHTML('Cannot receive SCTP CHUNK_SACK<BR>');
 	vSend($IF0, sctp_chunk_abort_snd);
 	vLogHTML('<FONT COLOR="#00FF00">NG</FONT>'); 
@@ -98,20 +98,20 @@ if($ret{status} != 0 || $ret{recvFrame} ne sctp_chunk_data_rcv_frag_all) {
 
 vSend($IF0, sctp_chunk_sack_snd_frag_all);
 
-vSend($IF0, sctp_chunk_data_snd_frag12);
+vSend($IF0, sctp_chunk_data_snd_frag10);
 
-%ret = vWarpRecv($IF0, 10, 0, 0, sctp_chunk_sack_rcv_frag12, sctp_chunk_data_and_sack_12);
-if($ret{status} != 0 || ($ret{recvFrame} ne sctp_chunk_sack_rcv_frag12 &&
-			 $ret{recvFrame} ne sctp_chunk_data_and_sack_12)) {
+%ret = vWarpRecv($IF0, 10, 0, 0, sctp_chunk_sack_rcv_frag10, sctp_chunk_data_and_sack_10);
+if($ret{status} != 0 || ($ret{recvFrame} ne sctp_chunk_sack_rcv_frag10 &&
+			 $ret{recvFrame} ne sctp_chunk_data_and_sack_10)) {
 	vLogHTML('Cannot receive SCTP CHUNK_SACK<BR>');
 	vSend($IF0, sctp_chunk_abort_snd);
 	vLogHTML('<FONT COLOR="#00FF00">NG</FONT>'); 
 	exit $V6evalTool::exitFail;
 }
 
-if ($ret{recvFrame} eq sctp_chunk_sack_rcv_frag12) {
-	%ret = vWarpRecv($IF0, 10, 0, 0, sctp_chunk_data_rcv_frag12);
-	if($ret{status} != 0 || $ret{recvFrame} ne sctp_chunk_data_rcv_frag12) {
+if ($ret{recvFrame} eq sctp_chunk_sack_rcv_frag10) {
+	%ret = vWarpRecv($IF0, 10, 0, 0, sctp_chunk_data_rcv_frag10);
+	if($ret{status} != 0 || $ret{recvFrame} ne sctp_chunk_data_rcv_frag10) {
 		vLogHTML('Cannot receive SCTP CHUNK_DATA<BR>');
 		vSend($IF0, sctp_chunk_abort_snd);
 		vLogHTML('<FONT COLOR="#00FF00">NG</FONT>'); 
@@ -119,7 +119,7 @@ if ($ret{recvFrame} eq sctp_chunk_sack_rcv_frag12) {
 	}
 }
 
-vSend($IF0, sctp_chunk_sack_snd_frag12);
+vSend($IF0, sctp_chunk_sack_snd_frag10);
 
 sctpUpdateRecvACK(2);
 

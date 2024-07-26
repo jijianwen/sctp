@@ -89,6 +89,7 @@ use Exporter;
 	sctpRemoteCommandAsyncDelay
 	sctpSystem
 	sctpReboot
+	sctpGetTimerGranularity
 );
 
 use V6evalTool;
@@ -1347,6 +1348,43 @@ sub sctpMakeBadMD5Cookie($) {
 	$len = length($cookie);
 
 	$ret = sprintf "%0".$len."d", 0;
+}
+#======================================================================
+# sctpGetTimerGranularity
+# In 2016 Linux kernel timer code was rewritten to sort timers into buckets.
+# See the commit message for the below for details:
+#
+#   commit 500462a9de657f86edaa102f8ab6bff7f7e43fc2
+#   Author: Thomas Gleixner <tglx@linutronix.de>
+#   Date:   Mon Jul 4 09:50:30 2016 +0000
+
+#      timers: Switch to a non-cascading wheel
+#
+# This results in the following granularity and range levels:
+# HZ 1000 steps
+# Level Offset  Granularity            Range
+#  0      0         1 ms                0 ms -         63 ms
+#  1     64         8 ms               64 ms -        511 ms
+#  2    128        64 ms              512 ms -       4095 ms (512ms - ~4s)
+#  3    192       512 ms             4096 ms -      32767 ms (~4s - ~32s)
+#  4    256      4096 ms (~4s)      32768 ms -     262143 ms (~32s - ~4m)
+#  5    320     32768 ms (~32s)    262144 ms -    2097151 ms (~4m - ~34m)
+#  6    384    262144 ms (~4m)    2097152 ms -   16777215 ms (~34m - ~4h)
+#  7    448   2097152 ms (~34m)  16777216 ms -  134217727 ms (~4h - ~1d)
+#  8    512  16777216 ms (~4h)  134217728 ms - 1073741822 ms (~1d - ~12d)
+#
+#  During sctp timer testing, the timeout won't exceed 4 min. And we
+#  consider granularity <= 512ms as 0.5s
+#======================================================================
+sub sctpGetTimerGranularity($) {
+	my ($basetime) = @_;
+	if ($basetime <= 32) {
+		return 0.5;
+	} elsif ($basetime > 32 && $basetime <= 262) {
+		return 4;
+	} else {
+		return 32;
+	}
 }
 
 #======================================================================

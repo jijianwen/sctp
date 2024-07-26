@@ -87,7 +87,7 @@ while ($count < $ASSOC_MAX_RETRANS) {
 	$etime = $ret{"recvTime".$ret{"recvCount"}};
 	$gap = $etime - $stime;
 
-	if (!sctpTimeFuzzyEqual($gap, $RTO, $SCTP::CONF{"TIME_PREC"})) {
+	if (!sctpTimeFuzzyEqual($gap, $RTO, sctpGetTimerGranularity($RTO))) {
 		# We got a bad time
 		vSend($IF0, sctp_chunk_abort_snd);
 		vLogHTML("ERROR: The retransmit T3-rxt time received:$gap, but expected: $RTO<BR>");

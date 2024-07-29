@@ -40,6 +40,8 @@ BEGIN {	$V6evalTool::TestVersion = '$Name: REL_1_0_3 $'; }
 use lib "../common";
 use V6evalTool;
 use SCTP;
+use threads;
+use threads::shared;
 
 %pktdesc = (
 	sctp_chunk_cookie_echo_rcv		=> "Recv SCTP CHUNK_COOKIE_ECHO (On Link0)",
@@ -48,6 +50,23 @@ use SCTP;
 
 $IF0 = Link0;
 $IF1 = Link1;
+my $retrans :shared = -1;
+
+sub recv_link0 {
+	while($ret{status} != 1) {
+		%ret = vWarpRecv($IF0, $TIMEOUT, 0, 0, sctp_chunk_cookie_echo_rcv);
+		lock($retrans);
+		$retrans++ if($ret{status} == 0 && $ret{recvFrame} eq 'sctp_chunk_cookie_echo_rcv');
+	}
+}
+
+sub recv_link1 {
+	while($ret{status} != 1) {
+		%ret = vWarpRecv($IF1, $TIMEOUT, 0, 0, sctp_chunk_cookie_echo_rcv_link1);
+		lock($retrans);
+		$retrans++ if($ret{status} == 0 && $ret{recvFrame} eq 'sctp_chunk_cookie_echo_rcv_link1');
+	}
+}
 
 vCapture($IF0);
 vCapture($IF1);
@@ -63,14 +82,10 @@ vListen($IF0);
 
 vLogHTML('<B>================ Main Test =================</B>');
 
-$retrans = -1;
-while($ret{status} != 1) {
-	%ret = vWarpRecv($IF0, $TIMEOUT, 0, 0, sctp_chunk_cookie_echo_rcv);
-	$retrans++ if($ret{status} == 0 && $ret{recvFrame} eq 'sctp_chunk_cookie_echo_rcv');
-
-	%ret = vWarpRecv($IF1, $TIMEOUT, 0, 0, sctp_chunk_cookie_echo_rcv_link1);
-	$retrans++ if($ret{status} == 0 && $ret{recvFrame} eq 'sctp_chunk_cookie_echo_rcv_link1');
-}
+my $recv0 = threads->create(\&recv_link0);
+my $recv1 = threads->create(\&recv_link1);
+$recv0->join();
+$recv1->join();
 
 if($MAX_INIT_RETRANS != $retrans) {
 	vLogHTML("Received SCTP CHUNK_COOKIE_ECHO $retrans times, but expect $MAX_INIT_RETRANS times<BR>");
